@@ -3,7 +3,7 @@ import lxml.html
 import sys
 
 
-print sys.argv[1]
+#print sys.argv[1]
 
 connection = urllib.urlopen( sys.argv[1] )
 #connection = urllib.urlopen( "https://en.wikipedia.org/wiki/Muzaffar_Ahmed_(politician)")
