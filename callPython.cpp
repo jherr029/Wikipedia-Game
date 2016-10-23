@@ -11,38 +11,47 @@ std::string fixSpaces( std::string );
 std::string addWikiLink( std::string );
 
 void callPythonScript( std::string );
-std::string getArticles( std::string, std::list< std::queue < std::string > > &, int & );
+std::string getArticles( std::string, std::list< std::queue < std::string > > &, int &, std::string );
+bool checkForRepeats( );
+
 
 int main( )
 {
     std::list< std::queue <std::string> > listQueuArticles;
 
-    std::string startFlag        = "Antartica";
-    std::string endFlag          = "Purity";
+    std::string startFlag        = "";
+    std::string endFlag          = "";
     std::string completeFlag     = "incomplete";
     std::string quitFlag         = "no";
 
-    std::ofstream outFile;
+    std::ofstream outFile1;
 
     int count = 0;
 
-    outFile.open( "Data.txt", std::ios_base::app );
+    outFile1.open( "Data.txt", std::ofstream::trunc );
 
-    //std::cout << "Starting Article: ";
-    //std::cin >> startFlag;
+    std::cout << "Starting Article: ";
+    std::cin >> startFlag;
 
-    //std::cout << "Ending Article: ";
-    //std::cin >> endFlag;
+    outFile1 << startFlag << std::endl;
+
+    std::cout << "Ending Article: ";
+    std::cin >> endFlag;
+    
+    std::cout << std::endl;
   
     callPythonScript( startFlag );
+
+    std::string changeMe = startFlag;
 
     while ( completeFlag != "complete" )
     {
        
-        completeFlag = getArticles( endFlag, listQueuArticles, count ); 
+        completeFlag = getArticles( endFlag, listQueuArticles, count, changeMe ); 
 
-        std::cout << listQueuArticles.front( ).front( ) << std::endl;
-        outFile << listQueuArticles.front( ).front( ) << std::endl;
+        std::cout << listQueuArticles.front( ).front( ) << "!" << std::endl;
+        changeMe = listQueuArticles.front( ).front( );
+        outFile1 << listQueuArticles.front( ).front( ) << "!!!" << std::endl;
 
         callPythonScript( listQueuArticles.front( ).front( ) );
         
@@ -54,10 +63,11 @@ int main( )
             std::cout << "EMPTY EMPTY EMPTY" << std::endl;
         }
     }
-   
+
     std::cout << "Done" << std::endl;
-    std::cout << "Links visited: " << count << std::endl;
-    outFile.close( );
+    std::cout << "\tLinks visited: " << count << std::endl;
+
+    outFile1.close( );
 
     return 0;
 }
@@ -76,7 +86,7 @@ void callPythonScript( std::string article )
 
 }
 
-std::string getArticles( std::string endArticle, std::list< std::queue< std::string> > &articles, int &i )
+std::string getArticles( std::string endArticle, std::list< std::queue< std::string> > &articles, int &i, std::string changeMe )
 {
     std::ifstream myFile;
     std::ofstream outFile;
@@ -88,7 +98,9 @@ std::string getArticles( std::string endArticle, std::list< std::queue< std::str
     //std::cout << "READING FROM FILE " << std::endl;
 
     myFile.open( "myFile" );
-    outFile.open( "Data.txt", std::ios_base::app | std::ofstream::trunc );
+    outFile.open( "Data.txt", std::ios_base::app );
+
+    outFile << "\n" << changeMe << std::endl;
 
     if ( myFile.is_open( ) )
     {
@@ -98,42 +110,59 @@ std::string getArticles( std::string endArticle, std::list< std::queue< std::str
             ss >> title;
             
 
-            if ( title.find( ":") != std::string::npos )
+            if ( title.find( ":" ) != std::string::npos ) 
             {
-                if ( title.find( "Category" ) != std::string::npos &&
-                        title.find( "Help" ) == std::string::npos  )
+                if ( title.find("Category") != std::string::npos 
+                        && title.find("Help") == std::string::npos ) 
                 {
                     titleQueue.push( title );
+
+                    outFile << "\t" + title << std::endl;
+                 //   std::cout << " @ " << title << std::endl;
                 }
             }
 
             else
             {
-                if ( title.find( "Main_Page" ) == std::string::npos )
+                if ( title != "Main_Page"  )
                 {
-                    titleQueue.push( title );
+
+		            if (title.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890_") != std::string::npos)
+		            { }
+
+                    else
+                    {
+                        titleQueue.push( title );
+
+                        outFile << "\t" + title << std::endl;
+                        //std::cout << " # " << title << std::endl;
+                    }
                 }
 
             }
             
-            outFile << "\t" + title << std::endl;
-            //std::cout << "BREAK?" << std::endl;
-            
-            //std::cout << "\t" << title << std::endl;
             i++;
             
             if ( endArticle == title )
             {
-                std::cout << endArticle << " == " << title << std::endl;
-                std::cout << "FOUND A MATCH" << std::endl;
+
+                articles.push_back( titleQueue );
+
+                std::cout << "\n\t\t" << articles.front( ).back( ) << std::endl;
+                std::cout << "\t\t\t" << endArticle << " == " << title << std::endl;
+                std::cout << "\t\t\t\tFOUND A MATCH" << std::endl;
+
+                myFile.close( );
+                outFile.close( );
+
                 return "complete";
             }
 
-            //std::cout << line << std::endl;
         }
     }
+
+    std::cout << std::endl;
     
-    //std::cout << "PUSHING THAT SHIT" << std::endl;
     articles.push_back( titleQueue );
 
     myFile.close( );
