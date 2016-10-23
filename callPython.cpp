@@ -3,28 +3,56 @@
 #include <string>
 #include <fstream>
 
-
 #include<list>
 #include<stack>
+
+std::string fixSpaces( std::string );
+std::string addWikiLink( std::string );
+
+void callPythonScript( std::string );
+std::string getArticles( std::string );
 
 int main( )
 {
 
-    std::string completeFlag = "incomplete";
+    std::string startFlag        = "Kakababu";
+    std::string endFlag          = "Pattern";
+    std::string completeFlag     = "incomplete";
+    std::string quitFlag         = "no";
 
-    std::string fileName = "testing";
-    std::string endArticle = "Pattern";
+    //std::cout << "Starting Article: ";
+    //std::cin >> startFlag;
 
-    std::string command = "python test.py ";
-
-    std::cout << "Not Done " << std::endl;
-
-    command += fileName;
-
-    system( command.c_str( ) );
+    //std::cout << "Ending Article: ";
+    //std::cin >> endFlag;
+    
+    callPythonScript( startFlag );
+    getArticles( endFlag );
     
     std::cout << "Done" << std::endl;
 
+
+    return 0;
+}
+
+void callPythonScript( std::string article )
+{
+    std::string wikiLink;
+
+    wikiLink = addWikiLink( article );
+
+    std::string endArticle = "Eating_disorder";
+
+    std::string command = "python test.py ";
+
+    command += wikiLink;
+
+    system( command.c_str( ) );
+
+}
+
+std::string getArticles( std::string endArticle )
+{
     std::ifstream myFile;
     std::string line;
 
@@ -41,17 +69,20 @@ int main( )
             if ( endArticle == line )
             {
                 std::cout << "FOUND A MATCH" << std::endl;
-                break;
+                return "match";
             }
-            std::cout << line << std::endl;
+
+            //std::cout << line << std::endl;
         }
     }
 
     myFile.close( );
 
-    std::cout << "Size: " << listOfTitles.size( ) << std::endl;
-    std::cout << "Front: " << listOfTitles.front( ) << std::endl;
-    std::cout << "Back: " << listOfTitles.back( ) << std::endl;
+    return "no_match";
+}
 
-    return 0;
+
+std::string addWikiLink( std::string article )
+{
+    return ( "https://en.wikipedia.org/wiki/" + article );
 }

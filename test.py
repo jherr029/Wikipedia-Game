@@ -5,7 +5,7 @@ import sys
 
 print sys.argv[1]
 
-connection = urllib.urlopen('https://en.wikipedia.org/wiki/Kakababu')
+connection = urllib.urlopen( sys.argv[1] )
 
 dom = lxml.html.fromstring( connection.read( ) )
 
