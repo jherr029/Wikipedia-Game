@@ -4,20 +4,28 @@
 #include <fstream>
 #include <sstream>
 
-#include<list>
-#include<queue>
+#include <list>
+#include <queue>
+#include <stack>
+#include <vector>
 
+void getInput( std::string & , std::string & );
 std::string fixSpaces( std::string );
 std::string addWikiLink( std::string );
 
 void callPythonScript( std::string );
-std::string getArticles( std::string, std::list< std::queue < std::string > > &, int &, std::string );
+
+std::string getArticles( std::string, std::list< std::vector < std::string > > &, int &, std::string );
+std::vector< std::string > getLinks( int & );
+std::string scanArticle( std::vector< std::string >, std::list< std::vector< std::string > > & , std::string );
+
 bool checkForRepeats( );
 
 
 int main( )
 {
-    std::list< std::queue <std::string> > listQueuArticles;
+    std::list< std::vector <std::string> > listQueuArticles;
+    std::vector< std::string > tmp;
 
     std::string startFlag        = "";
     std::string endFlag          = "";
@@ -30,46 +38,54 @@ int main( )
 
     outFile1.open( "Data.txt", std::ofstream::trunc );
 
-    std::cout << "Starting Article: ";
-    std::cin >> startFlag;
+    getInput( startFlag, endFlag );
 
-    outFile1 << startFlag << std::endl;
-
-    std::cout << "Ending Article: ";
-    std::cin >> endFlag;
-    
-    std::cout << std::endl;
-  
     callPythonScript( startFlag );
 
     std::string changeMe = startFlag;
 
-    while ( completeFlag != "complete" )
+    tmp.push_back( startFlag );
+    listQueuArticles.push_front( tmp );
+
+    while ( completeFlag != "complete" || listQueuArticles.empty( ) )
     {
-       
-        completeFlag = getArticles( endFlag, listQueuArticles, count, changeMe ); 
+        completeFlag = getArticles( endFlag, listQueuArticles, count, changeMe );
 
-        std::cout << listQueuArticles.front( ).front( ) << "!" << std::endl;
-        changeMe = listQueuArticles.front( ).front( );
-        outFile1 << listQueuArticles.front( ).front( ) << "!!!" << std::endl;
+        listQueuArticles.pop_front( );
 
-        callPythonScript( listQueuArticles.front( ).front( ) );
-        
-        if ( !listQueuArticles.front( ).empty( ) )
-            listQueuArticles.front( ).pop( );
-        else
+        std::cout << listQueuArticles.front( ).back( ) << std::endl;
+
+        if ( completeFlag != "complete" )
         {
-            completeFlag = "complete";
-            std::cout << "EMPTY EMPTY EMPTY" << std::endl;
+            changeMe = listQueuArticles.front( ).back( );
+
+            callPythonScript( listQueuArticles.front( ).back( ) );
+
         }
     }
 
     std::cout << "Done" << std::endl;
     std::cout << "\tLinks visited: " << count << std::endl;
+    std::cout << listQueuArticles.size( ) << std::endl;
+    std::cout << "Printing the path..." << std::endl;
 
+    for ( unsigned int i = 0; i < listQueuArticles.back( ).size( ); i++ )
+    {
+        std::cout << listQueuArticles.back( ).at( i ) << std::endl;
+    }
     outFile1.close( );
 
     return 0;
+}
+
+void getInput( std::string & start, std::string & end )
+{
+    std::cout << "Starting Article: ";
+    std::cin >> start;
+
+    std::cout << "Ending Article: ";
+    std::cin >> end;
+
 }
 
 void callPythonScript( std::string article )
@@ -86,21 +102,43 @@ void callPythonScript( std::string article )
 
 }
 
-std::string getArticles( std::string endArticle, std::list< std::queue< std::string> > &articles, int &i, std::string changeMe )
+std::string getArticles( std::string endArticle, std::list< std::vector< std::string> > & articles, int &i, std::string changeMe )
 {
-    std::ifstream myFile;
     std::ofstream outFile;
     std::string line;
     std::string title;
 
-    std::queue< std::string > titleQueue;
+    std::string quit;
 
-    //std::cout << "READING FROM FILE " << std::endl;
+    std::vector< std::string> vec = getLinks( i );
 
-    myFile.open( "myFile" );
+    std::string status = scanArticle( vec, articles, endArticle );
+
+    if ( status == "complete")
+    {
+        std::cout << "MATCH FOUND" << std::endl;
+        return status;
+    }
+
     outFile.open( "Data.txt", std::ios_base::app );
 
     outFile << "\n" << changeMe << std::endl;
+
+    outFile.close( );
+
+    vec.clear( );
+    return "no_match";
+}
+
+
+std::vector< std::string > getLinks( int &i )
+{
+    std::string title;
+    std::string line;
+    std::ifstream myFile;
+    std::vector< std::string > vec;
+
+    myFile.open( "myFile" );
 
     if ( myFile.is_open( ) )
     {
@@ -108,17 +146,14 @@ std::string getArticles( std::string endArticle, std::list< std::queue< std::str
         {
             std::stringstream ss( line );
             ss >> title;
-            
 
-            if ( title.find( ":" ) != std::string::npos ) 
+            if ( title.find( ":" ) != std::string::npos )
             {
-                if ( title.find("Category") != std::string::npos 
-                        && title.find("Help") == std::string::npos ) 
+                if ( title.find("Category") != std::string::npos && title.find("Help") == std::string::npos )
                 {
-                    titleQueue.push( title );
-
-                    outFile << "\t" + title << std::endl;
-                 //   std::cout << " @ " << title << std::endl;
+                    vec.push_back( title );
+                    //outFile << "\t" + title << std::endl;
+                    //std::cout << " @ " << title << std::endl;
                 }
             }
 
@@ -126,51 +161,52 @@ std::string getArticles( std::string endArticle, std::list< std::queue< std::str
             {
                 if ( title != "Main_Page"  )
                 {
-
 		            if (title.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890_") != std::string::npos)
 		            { }
 
                     else
                     {
-                        titleQueue.push( title );
-
-                        outFile << "\t" + title << std::endl;
-                        //std::cout << " # " << title << std::endl;
+                        vec.push_back( title );
+                        //outFile << "\t" + title << std::endl;
+                       //std::cout << " # " << title << std::endl;
                     }
                 }
-
             }
-            
+
             i++;
-            
-            if ( endArticle == title )
-            {
-
-                articles.push_back( titleQueue );
-
-                std::cout << "\n\t\t" << articles.front( ).back( ) << std::endl;
-                std::cout << "\t\t\t" << endArticle << " == " << title << std::endl;
-                std::cout << "\t\t\t\tFOUND A MATCH" << std::endl;
-
-                myFile.close( );
-                outFile.close( );
-
-                return "complete";
-            }
-
         }
     }
 
-    std::cout << std::endl;
-    
-    articles.push_back( titleQueue );
-
     myFile.close( );
-    outFile.close( );
-
-    return "no_match";
+    return vec;
 }
 
+std::string scanArticle( std::vector< std::string > vec, std::list< std::vector< std::string > > & articles, std::string endArticle )
+{
+    for ( unsigned int i = 0; i < vec.size( ); i++ )
+    {
+        std::vector< std::string > tmp = articles.front( );
+
+        tmp.push_back( vec[i] );
+        articles.push_back( tmp );
+        //std::cout << vec[i] << std::endl;
+
+        if ( endArticle == vec[i] )
+        {
+            std::cout << "MATCH" << std::endl;
+            i = vec.size( ) + 10;
+
+            vec.clear( );
+
+            return "complete";
+        }
+
+    }
+
+    vec.clear( );
+
+    return "incomplete";
+}
 
 std::string addWikiLink( std::string article )
 {
