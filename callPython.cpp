@@ -53,10 +53,9 @@ int main( )
 
         listQueuArticles.pop_front( );
 
-        std::cout << listQueuArticles.front( ).back( ) << std::endl;
-
         if ( completeFlag != "complete" )
         {
+            std::cout << listQueuArticles.front( ).back( ) << std::endl;
             changeMe = listQueuArticles.front( ).back( );
 
             callPythonScript( listQueuArticles.front( ).back( ) );
@@ -67,7 +66,7 @@ int main( )
     std::cout << "Done" << std::endl;
     std::cout << "\tLinks visited: " << count << std::endl;
     std::cout << listQueuArticles.size( ) << std::endl;
-    std::cout << "Printing the path..." << std::endl;
+    std::cout << "Printing the path..." << listQueuArticles.back( ).size( ) << std::endl;
 
     for ( unsigned int i = 0; i < listQueuArticles.back( ).size( ); i++ )
     {
