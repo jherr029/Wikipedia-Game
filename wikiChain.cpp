@@ -32,11 +32,15 @@ int main( )
     std::string completeFlag     = "incomplete";
     std::string quitFlag         = "no";
 
-    std::ofstream outFile1;
+    std::ofstream outFile;
+    std::ofstream resetFile;
+
+    resetFile.open( "Data.txt", std::ofstream::trunc );
+    resetFile.close( );
 
     int count = 0;
 
-    outFile1.open( "Data.txt", std::ofstream::trunc );
+    outFile.open( "Articles.txt", std::ofstream::trunc );
 
     getInput( startFlag, endFlag );
 
@@ -47,6 +51,8 @@ int main( )
     tmp.push_back( startFlag );
     listQueuArticles.push_front( tmp );
 
+    outFile << startFlag << std::endl;
+
     while ( completeFlag != "complete" || listQueuArticles.empty( ) )
     {
         completeFlag = getArticles( endFlag, listQueuArticles, count, changeMe );
@@ -55,7 +61,9 @@ int main( )
 
         if ( completeFlag != "complete" )
         {
-            std::cout << listQueuArticles.front( ).back( ) << std::endl;
+            // Name of the article that is currently being visited
+            //std::cout << "\t" << listQueuArticles.front( ).back( ) << std::endl;
+            //outFile << "\t" << listQueuArticles.front( ).back( ) << std::endl;
             changeMe = listQueuArticles.front( ).back( );
 
             callPythonScript( listQueuArticles.front( ).back( ) );
@@ -72,7 +80,8 @@ int main( )
     {
         std::cout << listQueuArticles.back( ).at( i ) << std::endl;
     }
-    outFile1.close( );
+
+    outFile.close( );
 
     return 0;
 }
@@ -85,6 +94,8 @@ void getInput( std::string & start, std::string & end )
     std::cout << "Ending Article: ";
     std::cin >> end;
 
+    std::cout << std::endl;
+
 }
 
 void callPythonScript( std::string article )
@@ -93,7 +104,7 @@ void callPythonScript( std::string article )
 
     wikiLink = addWikiLink( article );
 
-    std::string command = "python test.py ";
+    std::string command = "python linkFetcher.py ";
 
     command += wikiLink;
 
@@ -119,9 +130,9 @@ std::string getArticles( std::string endArticle, std::list< std::vector< std::st
         return status;
     }
 
-    outFile.open( "Data.txt", std::ios_base::app );
+    //outFile.open( "Data.txt", std::ios_base::app );
 
-    outFile << "\n" << changeMe << std::endl;
+    //outFile << "\n" << changeMe << std::endl;
 
     outFile.close( );
 
@@ -182,29 +193,38 @@ std::vector< std::string > getLinks( int &i )
 
 std::string scanArticle( std::vector< std::string > vec, std::list< std::vector< std::string > > & articles, std::string endArticle )
 {
+    std::ofstream outFile;
+
+    std::string resultFlag = "incomplete";
+
+    outFile.open( "Data.txt", std::ios_base::app );
+
+    //std::cout << "Scanning Article: " << articles.front( ).back( ) << std::endl;
+    outFile << articles.front( ).back( ) << std::endl;
+
     for ( unsigned int i = 0; i < vec.size( ); i++ )
     {
         std::vector< std::string > tmp = articles.front( );
 
         tmp.push_back( vec[i] );
         articles.push_back( tmp );
-        //std::cout << vec[i] << std::endl;
+
+        outFile << "\t" << vec[i] << std::endl;
 
         if ( endArticle == vec[i] )
         {
             std::cout << "MATCH" << std::endl;
             i = vec.size( ) + 10;
 
-            vec.clear( );
-
-            return "complete";
+            resultFlag = "complete";
         }
 
     }
 
+    outFile.close( );
     vec.clear( );
 
-    return "incomplete";
+    return resultFlag;
 }
 
 std::string addWikiLink( std::string article )
