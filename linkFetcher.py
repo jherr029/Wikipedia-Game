@@ -1,7 +1,7 @@
 import urllib
 import lxml.html
 import sys
-
+import os.path
 
 #print sys.argv[1]
 
@@ -16,12 +16,18 @@ target = open( "myFile", 'w')
 
 target.truncate( )
 
+s = "./Articles/"
 
 for link in dom.xpath('//a/@href'): # select the url in href for all a tags(links)
     if link.startswith( '/wiki/'):
-        target.write( link[6: ] )
-        target.write( "\n")
-        #print link
+        article = link[6: ]
+        path = s + article
+        #print path
+
+        if not os.path.exists( path ):
+            target.write( article )
+            target.write( "\n")
+            #print article
 
 #print "Closing file"
 target.close( )

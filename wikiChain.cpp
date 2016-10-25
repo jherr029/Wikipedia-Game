@@ -1,8 +1,16 @@
+// To save time, stop calling the python script to get the links
+// if the file already exist. That should save a lot of time
+// Since grabbing the links can take a good amount of time
+// So, only grab if the link file does not exist
+// Priority -- medium
+
+
 #include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <boost/filesystem.hpp>
 
 #include <list>
 #include <queue>
@@ -15,9 +23,11 @@ std::string addWikiLink( std::string );
 
 void callPythonScript( std::string );
 
-std::string getArticles( std::string, std::list< std::vector < std::string > > &, int &, std::string );
+std::string getArticles( std::string, std::list< std::vector < std::string > > &, int & );
 std::vector< std::string > getLinks( int & );
 std::string scanArticle( std::vector< std::string >, std::list< std::vector< std::string > > & , std::string );
+std::string getPath( std::string );
+bool doesFileExist( std::string  );
 
 bool checkForRepeats( );
 
@@ -46,40 +56,45 @@ int main( )
 
     callPythonScript( startFlag );
 
-    std::string changeMe = startFlag;
-
     tmp.push_back( startFlag );
     listQueuArticles.push_front( tmp );
 
     outFile << startFlag << std::endl;
+    std::cout << startFlag << std::endl;
 
     while ( completeFlag != "complete" || listQueuArticles.empty( ) )
     {
-        completeFlag = getArticles( endFlag, listQueuArticles, count, changeMe );
+        completeFlag = getArticles( endFlag, listQueuArticles, count );
 
-        listQueuArticles.pop_front( );
+        if ( !listQueuArticles.empty( ) )
+            listQueuArticles.pop_front( );
 
         if ( completeFlag != "complete" )
         {
+            std::string currentArticle = listQueuArticles.front( ).back( );
+
             // Name of the article that is currently being visited
-            //std::cout << "\t" << listQueuArticles.front( ).back( ) << std::endl;
-            //outFile << "\t" << listQueuArticles.front( ).back( ) << std::endl;
-            changeMe = listQueuArticles.front( ).back( );
+            std::cout << currentArticle << std::endl;
 
-            callPythonScript( listQueuArticles.front( ).back( ) );
-
+            if ( !doesFileExist( currentArticle ) )
+                 callPythonScript( currentArticle );
+            else
+                std::cout << "Not calling python script - file exist" << std::endl;
         }
     }
 
-    std::cout << "Done" << std::endl;
-    std::cout << "\tLinks visited: " << count << std::endl;
-    std::cout << listQueuArticles.size( ) << std::endl;
-    std::cout << "Printing the path..." << listQueuArticles.back( ).size( ) << std::endl;
+    std::cout << "Links visited: " << count << std::endl;
+    std::cout << "Size of list: " << listQueuArticles.size( ) << std::endl;
+    std::cout << "Printing the path..." << listQueuArticles.back( ).size( ) << std::endl << std::endl;
 
+    std::string space = "";
+    std::string spaceInc = " ";
     for ( unsigned int i = 0; i < listQueuArticles.back( ).size( ); i++ )
     {
-        std::cout << listQueuArticles.back( ).at( i ) << std::endl;
+         std::cout << space << listQueuArticles.back( ).at( i ) << std::endl;
+         space = space + spaceInc;
     }
+
 
     outFile.close( );
 
@@ -112,7 +127,7 @@ void callPythonScript( std::string article )
 
 }
 
-std::string getArticles( std::string endArticle, std::list< std::vector< std::string> > & articles, int &i, std::string changeMe )
+std::string getArticles( std::string endArticle, std::list< std::vector< std::string> > & articles, int &i )
 {
     std::ofstream outFile;
     std::string line;
@@ -125,16 +140,11 @@ std::string getArticles( std::string endArticle, std::list< std::vector< std::st
     std::string status = scanArticle( vec, articles, endArticle );
 
     if ( status == "complete")
-    {
-        std::cout << "MATCH FOUND" << std::endl;
         return status;
-    }
 
     //outFile.open( "Data.txt", std::ios_base::app );
 
     //outFile << "\n" << changeMe << std::endl;
-
-    outFile.close( );
 
     vec.clear( );
     return "no_match";
@@ -147,6 +157,16 @@ std::vector< std::string > getLinks( int &i )
     std::string line;
     std::ifstream myFile;
     std::vector< std::string > vec;
+
+
+    // TO DO. If that fileExistFlag is true
+    // go to the article folder and reading from the file
+    // instead of grabbing the links against which seems to
+    // take awhile.
+    // Reading from the file should be quicker
+    // Probably not within here. Make a new paremter value for the getArticles
+    // section
+
 
     myFile.open( "myFile" );
 
@@ -174,8 +194,7 @@ std::vector< std::string > getLinks( int &i )
 		            if (title.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890_") != std::string::npos)
 		            { }
 
-                    else
-                    {
+                    else                    {
                         vec.push_back( title );
                         //outFile << "\t" + title << std::endl;
                        //std::cout << " # " << title << std::endl;
@@ -196,35 +215,65 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
     std::ofstream outFile;
 
     std::string resultFlag = "incomplete";
+    std::string fileExistFlag = "false";
 
-    outFile.open( "Data.txt", std::ios_base::app );
+    std::string fileNameStr = getPath( articles.front( ).back( ) );
 
-    //std::cout << "Scanning Article: " << articles.front( ).back( ) << std::endl;
-    outFile << articles.front( ).back( ) << std::endl;
+    const char * fileName = fileNameStr.c_str( );
+
+    if ( !doesFileExist( fileNameStr ) )
+    {
+        outFile.open( fileName, std::ios_base::app );
+        //std::cout << "Scanning Article: " << articles.front( ).back( ) << std::endl;
+    }
+
+    else
+    {
+        std::cout << "\tFile exists -> " << fileName << std::endl;
+        fileExistFlag = "true";
+    }
 
     for ( unsigned int i = 0; i < vec.size( ); i++ )
     {
         std::vector< std::string > tmp = articles.front( );
 
-        tmp.push_back( vec[i] );
-        articles.push_back( tmp );
+        if ( resultFlag != "complete" )
+        {
+            tmp.push_back( vec[i] );
+            articles.push_back( tmp );
+        }
 
-        outFile << "\t" << vec[i] << std::endl;
+        if ( fileExistFlag == "false")
+            outFile << vec[i] << std::endl;
 
         if ( endArticle == vec[i] )
         {
-            std::cout << "MATCH" << std::endl;
-            i = vec.size( ) + 10;
-
+            std::cout << "\nMATCH" << std::endl;
             resultFlag = "complete";
         }
 
     }
 
-    outFile.close( );
+    if ( fileExistFlag != "false" )
+    {
+        outFile << std::endl;
+        outFile.close( );
+    }
+
     vec.clear( );
 
+
     return resultFlag;
+}
+
+bool doesFileExist( std::string article )
+{
+    return boost::filesystem::exists( getPath( article ) );
+}
+
+std::string getPath( std::string article )
+{
+    return "./Articles/" + article;
 }
 
 std::string addWikiLink( std::string article )
