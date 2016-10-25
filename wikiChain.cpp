@@ -24,7 +24,7 @@ std::string addWikiLink( std::string );
 void callPythonScript( std::string );
 
 std::string getArticles( std::string, std::list< std::vector < std::string > > &, int &, bool );
-std::vector< std::string > getLinks( int &, bool );
+std::vector< std::string > getLinks( int &, bool, std::string );
 std::string scanArticle( std::vector< std::string >, std::list< std::vector< std::string > > & , std::string );
 std::string getPath( std::string );
 bool doesFileExist( std::string  );
@@ -62,6 +62,7 @@ int main( )
     else
         fileExist = true;
 
+    std::cout << fileExist << std::endl;
 
     tmp.push_back( startFlag );
     listQueuArticles.push_front( tmp );
@@ -81,22 +82,23 @@ int main( )
             std::string currentArticle = listQueuArticles.front( ).back( );
 
             // Name of the article that is currently being visited
-            std::cout << currentArticle << std::endl;
+            std::cout << currentArticle;
 
             if ( !doesFileExist( currentArticle ) )
             {
                 fileExist = false;
+                std::cout << std::endl;
                 callPythonScript( currentArticle );
             }
             else
             {
                 fileExist = true;
-                std::cout << "Not calling python script - file exist" << std::endl;
+                std::cout << " - Not calling python script - file exist" << std::endl;
             }
         }
     }
 
-    std::cout << "Links visited: " << count << std::endl;
+    std::cout << "\nLinks visited: " << count << std::endl;
     std::cout << "Size of list: " << listQueuArticles.size( ) << std::endl;
     std::cout << "Printing the path..." << listQueuArticles.back( ).size( ) << std::endl << std::endl;
 
@@ -129,12 +131,15 @@ void getInput( std::string & start, std::string & end )
 void callPythonScript( std::string article )
 {
     std::string wikiLink;
+    std::string articleName;
 
     wikiLink = addWikiLink( article );
+    articleName = " \"" + article + "\"";
 
     std::string command = "python linkFetcher.py ";
 
     command += wikiLink;
+    command += articleName;
 
     system( command.c_str( ) );
 
@@ -149,7 +154,7 @@ std::string getArticles( std::string endArticle, std::list< std::vector< std::st
     std::vector< std::string> vec;
     std::string quit;
 
-    vec = getLinks( i, fileExist );
+    vec = getLinks( i, fileExist, articles.front( ).back( ) );
 
     std::string status = scanArticle( vec, articles, endArticle );
 
@@ -165,7 +170,7 @@ std::string getArticles( std::string endArticle, std::list< std::vector< std::st
 }
 
 
-std::vector< std::string > getLinks( int &i, bool FileExist )
+std::vector< std::string > getLinks( int &i, bool FileExist, std::string article )
 {
     std::string title;
     std::string line;
@@ -191,7 +196,8 @@ std::vector< std::string > getLinks( int &i, bool FileExist )
     // Also delete the last two lines since it seems to be the name of the article
     // Priority - HIGH
 
-    myFile.open( "myFile" );
+
+    myFile.open( getPath( article ).c_str( ) );
 
     if ( myFile.is_open( ) )
     {
@@ -271,7 +277,7 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
 
         if ( endArticle == vec[i] )
         {
-            std::cout << "\nMATCH" << std::endl;
+            //std::cout << "\nMATCH" << std::endl;
             resultFlag = "complete";
         }
 
