@@ -23,8 +23,8 @@ std::string addWikiLink( std::string );
 
 void callPythonScript( std::string );
 
-std::string getArticles( std::string, std::list< std::vector < std::string > > &, int & );
-std::vector< std::string > getLinks( int & );
+std::string getArticles( std::string, std::list< std::vector < std::string > > &, int &, bool );
+std::vector< std::string > getLinks( int &, bool );
 std::string scanArticle( std::vector< std::string >, std::list< std::vector< std::string > > & , std::string );
 std::string getPath( std::string );
 bool doesFileExist( std::string  );
@@ -42,6 +42,8 @@ int main( )
     std::string completeFlag     = "incomplete";
     std::string quitFlag         = "no";
 
+    bool fileExist               = false;
+
     std::ofstream outFile;
     std::ofstream resetFile;
 
@@ -54,7 +56,12 @@ int main( )
 
     getInput( startFlag, endFlag );
 
-    callPythonScript( startFlag );
+
+    if ( !doesFileExist( startFlag ) )
+        callPythonScript( startFlag );
+    else
+        fileExist = true;
+
 
     tmp.push_back( startFlag );
     listQueuArticles.push_front( tmp );
@@ -64,7 +71,7 @@ int main( )
 
     while ( completeFlag != "complete" || listQueuArticles.empty( ) )
     {
-        completeFlag = getArticles( endFlag, listQueuArticles, count );
+        completeFlag = getArticles( endFlag, listQueuArticles, count, fileExist );
 
         if ( !listQueuArticles.empty( ) )
             listQueuArticles.pop_front( );
@@ -77,9 +84,15 @@ int main( )
             std::cout << currentArticle << std::endl;
 
             if ( !doesFileExist( currentArticle ) )
-                 callPythonScript( currentArticle );
+            {
+                fileExist = false;
+                callPythonScript( currentArticle );
+            }
             else
+            {
+                fileExist = true;
                 std::cout << "Not calling python script - file exist" << std::endl;
+            }
         }
     }
 
@@ -127,15 +140,16 @@ void callPythonScript( std::string article )
 
 }
 
-std::string getArticles( std::string endArticle, std::list< std::vector< std::string> > & articles, int &i )
+std::string getArticles( std::string endArticle, std::list< std::vector< std::string> > & articles, int & i, bool fileExist )
 {
     std::ofstream outFile;
     std::string line;
     std::string title;
 
+    std::vector< std::string> vec;
     std::string quit;
 
-    std::vector< std::string> vec = getLinks( i );
+    vec = getLinks( i, fileExist );
 
     std::string status = scanArticle( vec, articles, endArticle );
 
@@ -151,7 +165,7 @@ std::string getArticles( std::string endArticle, std::list< std::vector< std::st
 }
 
 
-std::vector< std::string > getLinks( int &i )
+std::vector< std::string > getLinks( int &i, bool FileExist )
 {
     std::string title;
     std::string line;
@@ -167,6 +181,15 @@ std::vector< std::string > getLinks( int &i )
     // Probably not within here. Make a new paremter value for the getArticles
     // section
 
+    // So im just wasting time, why not just let the pyhton script create the file???
+    // that means the cutting of unnecessary parts should be done by the pyhton script
+    // Recreating the files is just wasting time and processing power
+    // The file creation part should be left to python since it already creates the files from the beginning
+    // TO-DO: All of the following parts in this function should be done in python not in C++
+    // That means cut off ":" and "Help" and only keep the Category.
+    // Also only keep clean english and not the weird characters. So something from line 215
+    // Also delete the last two lines since it seems to be the name of the article
+    // Priority - HIGH
 
     myFile.open( "myFile" );
 
