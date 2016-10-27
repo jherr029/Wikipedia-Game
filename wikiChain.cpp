@@ -47,27 +47,26 @@ int main( )
     std::ofstream outFile;
     std::ofstream resetFile;
 
-    resetFile.open( "Data.txt", std::ofstream::trunc );
-    resetFile.close( );
+    //resetFile.open( "Data.txt", std::ofstream::trunc );
+    //resetFile.close( );
 
     int count = 0;
 
-    outFile.open( "Articles.txt", std::ofstream::trunc );
+    //outFile.open( "Articles.txt", std::ofstream::trunc );
 
     getInput( startFlag, endFlag );
-
 
     if ( !doesFileExist( startFlag ) )
         callPythonScript( startFlag );
     else
         fileExist = true;
 
-    std::cout << fileExist << std::endl;
+    //std::cout << fileExist << std::endl;
 
     tmp.push_back( startFlag );
     listQueuArticles.push_front( tmp );
 
-    outFile << startFlag << std::endl;
+    //outFile << startFlag << std::endl;
     std::cout << startFlag << std::endl;
 
     while ( completeFlag != "complete" || listQueuArticles.empty( ) )
@@ -252,7 +251,7 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
 
     if ( !doesFileExist( fileNameStr ) )
     {
-        outFile.open( fileName, std::ios_base::app );
+        //outFile.open( fileName, std::ios_base::app );
         //std::cout << "Scanning Article: " << articles.front( ).back( ) << std::endl;
     }
 
@@ -272,8 +271,8 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
             articles.push_back( tmp );
         }
 
-        if ( fileExistFlag == "false")
-            outFile << vec[i] << std::endl;
+        //if ( fileExistFlag == "false")
+        //outFile << vec[i] << std::endl;
 
         if ( endArticle == vec[i] )
         {
@@ -285,8 +284,8 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
 
     if ( fileExistFlag != "false" )
     {
-        outFile << std::endl;
-        outFile.close( );
+        //outFile << std::endl;
+        //outFile.close( );
     }
 
     vec.clear( );
