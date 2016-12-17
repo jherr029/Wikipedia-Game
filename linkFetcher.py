@@ -18,6 +18,8 @@ banned3 = "International_Standard_Serial_Number"
 banned4 = "PubMed_Central"
 banned5 = "International_Standard_Book_Number"
 banned6 = "Bibcode"
+banned7 = "Portal"
+banned8 = "Help"
 banned  = "Category"
 
 
@@ -39,7 +41,8 @@ if not os.path.isfile( tmp ):
             if not article.startswith(banned) and not article.startswith( 'File' ) and not article.startswith('Special') and\
                not article.startswith('Wikipedia') and not article.startswith('Template'):
                 if not article.startswith(banned1) and not article.startswith(banned2) and not article.startswith(banned3) and \
-                   not article.startswith(banned4) and not article.startswith(banned5) and not article.startswith(banned6):
+                   not article.startswith(banned4) and not article.startswith(banned5) and not article.startswith(banned6) and \
+                   not article.startswith(banned7) and not article.startswith(banned8):
                     path = s + article
                     target.write( article )
                     target.write( "\n")

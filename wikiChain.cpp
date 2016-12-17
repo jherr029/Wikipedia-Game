@@ -17,11 +17,15 @@
 #include <stack>
 #include <vector>
 
-void getInput( std::string & , std::string & );
-std::string fixSpaces( std::string );
-std::string addWikiLink( std::string );
 
-void callPythonScript( std::string );
+void getInput( std::string & , std::string & ); // Get user input ( starting and ending word )
+std::string fixSpaces( std::string );           // Fixes spaces
+std::string addWikiLink( std::string );         // Adds the wikiepedia page link to the string
+
+void callPythonScript( std::string );           // Calls a python script that gets all hyperlinks from within a page
+                                                // That same script will place all those links into a text file
+                                                // The text file will be titled after the title of the wikipedia page
+                                                // The contents of the file will be the hyperlinks within the page
 
 std::string getArticles( std::string, std::list< std::vector < std::string > > &, int &, bool );
 std::vector< std::string > getLinks( int &, bool, std::string );
@@ -54,10 +58,15 @@ int main( )
 
     //outFile.open( "Articles.txt", std::ofstream::trunc );
 
+    // startFlag and endFlag are returned by reference
     getInput( startFlag, endFlag );
 
+    //  If the starting article does not exist
+    //  call the python script
+    //  else, it already exist so do not call the script
     if ( !doesFileExist( startFlag ) )
         callPythonScript( startFlag );
+
     else
         fileExist = true;
 
@@ -69,7 +78,8 @@ int main( )
     //outFile << startFlag << std::endl;
     std::cout << startFlag << std::endl;
 
-    while ( completeFlag != "complete" || listQueuArticles.empty( ) )
+    // This while loop is responsible for the majority of the work
+    while ( completeFlag != "complete" || listQueuArticles.empty( ) )  //   May have to check the 2nd parameter here
     {
         completeFlag = getArticles( endFlag, listQueuArticles, count, fileExist );
 
@@ -89,6 +99,7 @@ int main( )
                 std::cout << std::endl;
                 callPythonScript( currentArticle );
             }
+
             else
             {
                 fileExist = true;
