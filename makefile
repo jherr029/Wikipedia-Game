@@ -1,5 +1,5 @@
 CC=clang++
-CC_FLAGS=-Wall -Ofast
+CC_FLAGS=-Wall -Ofast -g
 LIBS=-L/usr/include/boost -lboost_filesystem -lboost_system
 EXEC=test.out
 SOURCES=$(wildcard *.cpp)

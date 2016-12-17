@@ -59,7 +59,9 @@ int main( )
     //outFile.open( "Articles.txt", std::ofstream::trunc );
 
     // startFlag and endFlag are returned by reference
-    getInput( startFlag, endFlag );
+    //getInput( startFlag, endFlag );
+    startFlag = "Steve_Jobs";
+    endFlag = "Mickey_Mouse";
 
     //  If the starting article does not exist
     //  call the python script
@@ -83,7 +85,7 @@ int main( )
     {
         completeFlag = getArticles( endFlag, listQueuArticles, count, fileExist );
 
-        if ( !listQueuArticles.empty( ) )
+        if ( !listQueuArticles.empty( ) ) // this may have to be moved towards the end
             listQueuArticles.pop_front( );
 
         if ( completeFlag != "complete" )
@@ -230,10 +232,11 @@ std::vector< std::string > getLinks( int &i, bool FileExist, std::string article
             {
                 if ( title != "Main_Page"  )
                 {
-		            if (title.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890_") != std::string::npos)
-		            { }
+                    if (title.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890_") != std::string::npos)
+                    { }
 
-                    else                    {
+                    else
+                    {
                         vec.push_back( title );
                         //outFile << "\t" + title << std::endl;
                        //std::cout << " # " << title << std::endl;
@@ -245,10 +248,24 @@ std::vector< std::string > getLinks( int &i, bool FileExist, std::string article
         }
     }
 
+
+    std::cout << " ++++++++++++++ " << std::endl;
+    std::cout << " ++++++++++++++\n " << std::endl;
+
+
+    for ( unsigned int i = 0; i < vec.size( ); i++ )
+    {
+        std::cout << "\t" << vec.at(i) << std::endl;
+    }
+
+    std::cout << std::endl;
+
     myFile.close( );
     return vec;
 }
 
+
+// goes through the vector 
 std::string scanArticle( std::vector< std::string > vec, std::list< std::vector< std::string > > & articles, std::string endArticle )
 {
     std::ofstream outFile;
@@ -260,6 +277,7 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
 
     const char * fileName = fileNameStr.c_str( );
 
+    // Need to find out why this is empty
     if ( !doesFileExist( fileNameStr ) )
     {
         //outFile.open( fileName, std::ios_base::app );
@@ -274,16 +292,16 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
 
     for ( unsigned int i = 0; i < vec.size( ); i++ )
     {
+        // gets the the first vector in the list
         std::vector< std::string > tmp = articles.front( );
+
+        std::cout << "\a";
 
         if ( resultFlag != "complete" )
         {
             tmp.push_back( vec[i] );
             articles.push_back( tmp );
         }
-
-        //if ( fileExistFlag == "false")
-        //outFile << vec[i] << std::endl;
 
         if ( endArticle == vec[i] )
         {
