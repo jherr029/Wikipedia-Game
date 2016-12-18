@@ -16,6 +16,7 @@
 #include <queue>
 #include <stack>
 #include <vector>
+#include <iterator>
 
 
 void getInput( std::string & , std::string & ); // Get user input ( starting and ending word )
@@ -59,9 +60,9 @@ int main( )
     //outFile.open( "Articles.txt", std::ofstream::trunc );
 
     // startFlag and endFlag are returned by reference
-    //getInput( startFlag, endFlag );
-    startFlag = "Steve_Jobs";
-    endFlag = "Mickey_Mouse";
+    getInput( startFlag, endFlag );
+    //startFlag = "Barack_Obama";
+    //endFlag = "Wolf";
 
     //  If the starting article does not exist
     //  call the python script
@@ -93,26 +94,31 @@ int main( )
             std::string currentArticle = listQueuArticles.front( ).back( );
 
             // Name of the article that is currently being visited
-            std::cout << currentArticle;
+            //std::cout << currentArticle << std::endl;
+
+            if ( currentArticle == "Star_Wars" )
+                std::cout << "*(*)(()*)(()()&(&*(&*(&*(&*())))))" << std::endl;
 
             if ( !doesFileExist( currentArticle ) )
             {
                 fileExist = false;
-                std::cout << std::endl;
+                //std::cout << std::endl;
                 callPythonScript( currentArticle );
             }
 
             else
             {
                 fileExist = true;
-                std::cout << " - Not calling python script - file exist" << std::endl;
+                //std::cout << " - Not calling python script - file exist" << std::endl;
             }
         }
     }
 
-    std::cout << "\nLinks visited: " << count << std::endl;
+    std::cout << "\nLinks: " << count << std::endl;
     std::cout << "Size of list: " << listQueuArticles.size( ) << std::endl;
     std::cout << "Printing the path..." << listQueuArticles.back( ).size( ) << std::endl << std::endl;
+
+    std::cout << std::endl;
 
     std::string space = "";
     std::string spaceInc = " ";
@@ -123,6 +129,19 @@ int main( )
     }
 
 
+    /*
+    std::cout << "\nPrinting everything within the list!" << std::endl;
+
+    for ( std::list<std::vector<std::string> >::iterator itr = listQueuArticles.begin( ); itr != listQueuArticles.end( ); itr++ )
+    {
+        for ( unsigned int i = 0; i < itr->size( ); i++ )
+            std::cout << itr->at( i ) << " ";
+
+        std::cout << std::endl;
+        
+    }
+    */
+ 
     outFile.close( );
 
     return 0;
@@ -248,17 +267,18 @@ std::vector< std::string > getLinks( int &i, bool FileExist, std::string article
         }
     }
 
+    // print statements
+    //std::cout << " ++++++++++++++ " << std::endl;
+    //std::cout << " ++++++++++++++\n " << std::endl;
 
-    std::cout << " ++++++++++++++ " << std::endl;
-    std::cout << " ++++++++++++++\n " << std::endl;
-
-
+    /*
     for ( unsigned int i = 0; i < vec.size( ); i++ )
     {
         std::cout << "\t" << vec.at(i) << std::endl;
     }
+    */
 
-    std::cout << std::endl;
+    //std::cout << std::endl;
 
     myFile.close( );
     return vec;
@@ -286,7 +306,8 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
 
     else
     {
-        std::cout << "\tFile exists -> " << fileName << std::endl;
+        // does this even do anything??
+        //std::cout << "\tFile exists -> " << fileName << std::endl;
         fileExistFlag = "true";
     }
 
@@ -295,7 +316,6 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
         // gets the the first vector in the list
         std::vector< std::string > tmp = articles.front( );
 
-        std::cout << "\a";
 
         if ( resultFlag != "complete" )
         {
@@ -307,6 +327,8 @@ std::string scanArticle( std::vector< std::string > vec, std::list< std::vector<
         {
             //std::cout << "\nMATCH" << std::endl;
             resultFlag = "complete";
+
+            callPythonScript( endArticle ); // Move this somewhere else
         }
 
     }
